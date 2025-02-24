@@ -17,7 +17,9 @@ public class RecordRepository {
     private JdbcTemplate jdbcTemplate;
 
     public void batchInsert(List<Record> records) {
-        String sql = "INSERT INTO record (id, transactionId, transactionType, transactionDate, transactionAmount, numberOfTransactions) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO record (id, transactionId, transactionType, " +
+                "transactionDate, transactionAmount, numberOfTransactions) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.batchUpdate(sql, records, 1000, (ps, record) -> {
             UUID id = record.getId() != null ? record.getId() : UUID.randomUUID();
