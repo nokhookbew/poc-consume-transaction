@@ -2,6 +2,8 @@ package com.example.pocconsumetransaction.repository;
 
 import com.example.pocconsumetransaction.model.Record;
 import com.example.pocconsumetransaction.repository.mapper.RecordMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,15 +15,18 @@ import java.util.UUID;
 @Repository
 public class RecordRepository {
 
+    private static final Logger log = LoggerFactory.getLogger(RecordRepository.class);
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     public void batchInsert(List<Record> records) {
-        String sql = "INSERT INTO record (id, transactionId, transactionType, " +
-                "transactionDate, transactionAmount, numberOfTransactions) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("insert into record (id, transactionId, transactionType, ");
+        sqlBuilder.append("transactionDate, transactionAmount, ");
+        sqlBuilder.append("numberOfTransactions) ");
+        sqlBuilder.append("values(?, ?, ?, ?, ?, ?)");
 
-        jdbcTemplate.batchUpdate(sql, records, 1000, (ps, record) -> {
+        jdbcTemplate.batchUpdate(sqlBuilder.toString(), records, 1000, (ps, record) -> {
             UUID id = record.getId() != null ? record.getId() : UUID.randomUUID();
             ps.setObject(1, id);
             ps.setString(2, record.getTransactionId());
@@ -31,7 +36,7 @@ public class RecordRepository {
             ps.setInt(6, record.getNumberOfTransactions());
         });
 
-        System.out.println("Batch insert completed: " + records.size() + " records");
+        log.info("Batch insert completed: {} records", records.size());
     }
 
     public List<Record> findRecordsByTransactionId(String transactionId, int offset, int limit) {
